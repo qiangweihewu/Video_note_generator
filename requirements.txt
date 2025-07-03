@@ -11,6 +11,15 @@ urllib3>=2.1.0
 certifi>=2023.11.17
 ffmpeg-python>=0.2.0
 
+# AI providers
+google-generativeai>=0.3.0
+
+# Image generation dependencies
+playwright>=1.40.0
+markdown>=3.5.0
+jinja2>=3.1.0
+beautifulsoup4>=4.12.2
+
 # Optional dependencies for better performance
 torch>=2.1.0
 pytube>=15.0.0

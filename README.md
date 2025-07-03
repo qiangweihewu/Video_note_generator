@@ -75,6 +75,15 @@ python video_note_generator.py urls.txt
 python video_note_generator.py notes.md
 ```
 
+4. **HTML预览功能** 🆕：
+```bash
+# 预览任意 Markdown 文件
+python video_note_generator.py your_file.md --preview
+
+# 预览生成的小红书笔记
+python video_note_generator.py temp_notes/20250702_234851_xiaohongshu.md --preview
+```
+
 ## 🛠️ 使用工具
 
 - [FFmpeg](https://ffmpeg.org/) - 音视频转换
@@ -94,6 +103,9 @@ python video_note_generator.py notes.md
 
 # 安装 Python 依赖
 pip install -r requirements.txt
+
+# 安装 Markdown 渲染依赖（可选，用于HTML预览）
+pip install markdown
 
 # 配置环境变量
 cp .env.example .env
@@ -142,6 +154,12 @@ python video_note_generator.py test.md
    - 2-3张相关配图
    - 优化的标签系统
    - 互动引导设计
+
+4. **HTML预览版本** (`YYYYMMDD_HHMMSS_xiaohongshu.html`) - 🆕:
+   - 响应式网页设计
+   - 优雅的标签样式
+   - 清晰的排版布局
+   - 适配多种设备显示
 
 ## ⚙️ 配置说明
 

@@ -21,6 +21,15 @@ import whisper
 import openai
 import argparse
 
+# 导入markdown转换模块
+try:
+    import markdown
+    from markdown.extensions import fenced_code, tables, toc
+    MARKDOWN_CONVERSION_AVAILABLE = True
+except ImportError:
+    MARKDOWN_CONVERSION_AVAILABLE = False
+    print("⚠️ Markdown转HTML模块未找到，HTML预览功能将不可用。请运行: pip install markdown")
+
 # 加载环境变量
 load_dotenv()
 
@@ -119,7 +128,7 @@ if AI_PROVIDER == 'openrouter':
             openrouter_client.models.list()
             print("✅ OpenRouter API 连接测试成功")
             ai_client_available = True
-            AI_MODEL_NAME = os.getenv('OPENROUTER_MODEL', "openai/gpt-3.5-turbo") # Default OpenRouter model
+            AI_MODEL_NAME = os.getenv('OPENROUTER_MODEL', "openai/gpt-3.5-turbo-1106") # Default OpenRouter model
             print(f"✅ OpenRouter 模型已设置为: {AI_MODEL_NAME}")
         except Exception as e:
             print(f"⚠️ OpenRouter API 连接测试失败: {str(e)}")
@@ -462,66 +471,138 @@ class VideoNoteGenerator:
             print(f"备用下载方法 {method} 失败: {str(e)}")
             return None
 
-    def _download_video(self, url: str, temp_dir: str) -> Tuple[Optional[str], Optional[Dict[str, str]]]:
-        """下载视频并返回音频文件路径和信息"""
+    def _download_video(self, url: str, temp_dir: str) -> Tuple[Optional[str], Optional[Dict[str, str]], bool]:
+        """下载视频并返回音频或字幕文件路径、信息以及一个布尔值，该布尔值指示返回的是否是字幕文件。"""
         try:
             platform = self._determine_platform(url)
             if not platform:
                 raise DownloadError("不支持的视频平台", "unknown", "platform_error")
 
-            # 基本下载选项
-            options = {
-                'format': 'bestaudio/best',
-                'outtmpl': os.path.join(temp_dir, '%(title)s.%(ext)s'),
-                'postprocessors': [{
-                    'key': 'FFmpegExtractAudio',
-                    'preferredcodec': 'mp3',
-                }],
-                'quiet': True,
-                'no_warnings': True,
-            }
+            # 检查字幕
+            subtitle_path, info = self._download_subtitles(url, temp_dir)
+            if subtitle_path:
+                video_info = {
+                    'title': info.get('title', '未知标题'),
+                    'uploader': info.get('uploader', '未知作者'),
+                    'description': info.get('description', ''),
+                    'duration': info.get('duration', 0),
+                    'platform': platform
+                }
+                return subtitle_path, video_info, True
 
-            # 下载视频
-            for attempt in range(3):  # 最多重试3次
-                try:
-                    with yt_dlp.YoutubeDL(options) as ydl:
-                        print(f"正在尝试下载（第{attempt + 1}次）...")
-                        info = ydl.extract_info(url, download=True)
-                        if not info:
-                            raise DownloadError("无法获取视频信息", platform, "info_error")
+            # 如果没有字幕，则下载音频
+            audio_path, info = self._download_audio(url, temp_dir)
+            if audio_path:
+                video_info = {
+                    'title': info.get('title', '未知标题'),
+                    'uploader': info.get('uploader', '未知作者'),
+                    'description': info.get('description', ''),
+                    'duration': info.get('duration', 0),
+                    'platform': platform
+                }
+                return audio_path, video_info, False
 
-                        # 找到下载的音频文件
-                        downloaded_files = [f for f in os.listdir(temp_dir) if f.endswith('.mp3')]
-                        if not downloaded_files:
-                            raise DownloadError("未找到下载的音频文件", platform, "file_error")
-
-                        audio_path = os.path.join(temp_dir, downloaded_files[0])
-                        if not os.path.exists(audio_path):
-                            raise DownloadError("音频文件不存在", platform, "file_error")
-
-                        video_info = {
-                            'title': info.get('title', '未知标题'),
-                            'uploader': info.get('uploader', '未知作者'),
-                            'description': info.get('description', ''),
-                            'duration': info.get('duration', 0),
-                            'platform': platform
-                        }
-
-                        print(f"✅ {platform}视频下载成功")
-                        return audio_path, video_info
-
-                except Exception as e:
-                    print(f"⚠️ 下载失败（第{attempt + 1}次）: {str(e)}")
-                    if attempt < 2:  # 如果不是最后一次尝试
-                        print("等待5秒后重试...")
-                        time.sleep(5)
-                    else:
-                        raise  # 最后一次失败，抛出异常
+            return None, None, False
 
         except Exception as e:
             error_msg = self._handle_download_error(e, platform, url)
             print(f"⚠️ {error_msg}")
+            return None, None, False
+
+    def _download_audio(self, url: str, temp_dir: str) -> Tuple[Optional[str], Optional[Dict[str, str]]]:
+        """下载音频并返回文件路径和信息"""
+        platform = self._determine_platform(url)
+        options = {
+            'format': 'bestaudio/best',
+            'outtmpl': os.path.join(temp_dir, '%(title)s.%(ext)s'),
+            'postprocessors': [{
+                'key': 'FFmpegExtractAudio',
+                'preferredcodec': 'mp3',
+            }],
+            'quiet': True,
+            'no_warnings': True,
+        }
+
+        for attempt in range(3):
+            try:
+                with yt_dlp.YoutubeDL(options) as ydl:
+                    print(f"正在尝试下载音频（第{attempt + 1}次）...")
+                    info = ydl.extract_info(url, download=True)
+                    if not info:
+                        raise DownloadError("无法获取视频信息", platform, "info_error")
+
+                    downloaded_files = [f for f in os.listdir(temp_dir) if f.endswith('.mp3')]
+                    if not downloaded_files:
+                        raise DownloadError("未找到下载的音频文件", platform, "file_error")
+
+                    audio_path = os.path.join(temp_dir, downloaded_files[0])
+                    if not os.path.exists(audio_path):
+                        raise DownloadError("音频文件不存在", platform, "file_error")
+
+                    print(f"✅ {platform}音频下载成功")
+                    return audio_path, info
+
+            except Exception as e:
+                print(f"⚠️ 音频下载失败（第{attempt + 1}次）: {str(e)}")
+                if attempt < 2:
+                    print("等待5秒后重试...")
+                    time.sleep(5)
+                else:
+                    raise
+
+    def _download_subtitles(self, url: str, temp_dir: str) -> Tuple[Optional[str], Optional[Dict[str, str]]]:
+        """下载字幕并返回文件路径和信息"""
+        platform = self._determine_platform(url)
+        options = {
+            'writesubtitles': True,
+            'writeautomaticsub': True,  # 添加自动生成字幕
+            'subtitleslangs': ['zh-Hans', 'zh-Hant', 'zh', 'en'],  # 添加更多中文选项
+            'subtitlesformat': 'vtt/srt/best',  # 支持多种格式
+            'skip_download': True,
+            'outtmpl': os.path.join(temp_dir, '%(title)s.%(ext)s'),
+            'quiet': True,
+            'no_warnings': True,
+        }
+
+        try:
+            with yt_dlp.YoutubeDL(options) as ydl:
+                print("正在检查和下载字幕...")
+                info = ydl.extract_info(url, download=True)
+                if not info:
+                    return None, None
+
+                subtitle_files = [f for f in os.listdir(temp_dir) if f.endswith(('.vtt', '.srt'))]
+                if not subtitle_files:
+                    return None, None
+
+                subtitle_path = os.path.join(temp_dir, subtitle_files[0])
+                print(f"✅ {platform}字幕下载成功")
+                return subtitle_path, info
+
+        except Exception as e:
+            print(f"⚠️ 字幕下载失败: {str(e)}")
             return None, None
+
+    def _read_subtitle_file(self, file_path: str) -> str:
+        """读取字幕文件内容"""
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                lines = f.readlines()
+            
+            # 移除VTT格式的时间戳和元数据
+            content_lines = []
+            for line in lines:
+                if not re.match(r'^(\d{2}:)?\d{2}:\d{2}\.\d{3}\s+-->\s+(\d{2}:)?\d{2}:\d{2}\.\d{3}', line) and \
+                   not line.strip().isdigit() and \
+                   'WEBVTT' not in line and \
+                   'Kind:' not in line and \
+                   'Language:' not in line:
+                    content_lines.append(line.strip())
+            
+            return ' '.join(content_lines)
+        except Exception as e:
+            print(f"⚠️ 读取字幕文件失败: {str(e)}")
+            return ""
 
     def _transcribe_audio(self, audio_path: str) -> str:
         """使用Whisper转录音频"""
@@ -727,6 +808,103 @@ Markdown格式要求：
     
         return "\n\n".join(organized_chunks)
 
+    def _convert_md_to_html(self, md_content: str, title: str = '') -> str:
+        """将Markdown内容转换为HTML"""
+        try:
+            # 导入markdown库
+            import markdown
+            from markdown.extensions import fenced_code, tables, toc
+            
+            # 预处理markdown内容，处理标签
+            lines = md_content.split('\n')
+            processed_lines = []
+            for line in lines:
+                # 如果一行全是以#开头的标签
+                if all(word.strip().startswith('#') for word in line.split() if word.strip()):
+                    # 将标签行转换为带样式的span标签
+                    tags = line.strip().split()
+                    processed_line = '<div class="tags">' + ' '.join([f'<span class="tag">{tag}</span>' for tag in tags]) + '</div>'
+                    processed_lines.append(processed_line)
+                else:
+                    processed_lines.append(line)
+            processed_content = '\n'.join(processed_lines)
+            
+            # HTML模板
+            html_template = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="utf-8">
+                <title>{title}</title>
+                <style>
+                    body {{
+                        max-width: 800px;
+                        margin: 0 auto;
+                        padding: 20px;
+                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+                        line-height: 1.6;
+                        color: #333;
+                    }}
+                    img {{
+                        max-width: 100%;
+                        height: auto;
+                        border-radius: 8px;
+                        margin: 20px 0;
+                    }}
+                    h1, h2, h3 {{
+                        color: #2c3e50;
+                    }}
+                    code {{
+                        background: #f8f9fa;
+                        padding: 2px 5px;
+                        border-radius: 3px;
+                    }}
+                    pre {{
+                        background: #f8f9fa;
+                        padding: 15px;
+                        border-radius: 5px;
+                        overflow-x: auto;
+                    }}
+                    blockquote {{
+                        border-left: 4px solid #dfe2e5;
+                        margin: 0;
+                        padding-left: 20px;
+                        color: #666;
+                    }}
+                    .tags {{
+                        margin: 20px 0;
+                        line-height: 2;
+                    }}
+                    .tag {{
+                        display: inline-block;
+                        padding: 4px 12px;
+                        margin: 0 8px 8px 0;
+                        background-color: #f3f4f6;
+                        color: #2563eb;
+                        border-radius: 16px;
+                        font-size: 0.9em;
+                        transition: all 0.2s;
+                    }}
+                    .tag:hover {{
+                        background-color: #2563eb;
+                        color: white;
+                    }}
+                </style>
+            </head>
+            <body>
+                {markdown.markdown(processed_content, extensions=['fenced_code', 'tables', 'toc'])}
+            </body>
+            </html>
+            """
+            
+            return html_template
+        except ImportError:
+            print("⚠️ 请安装markdown库: pip install markdown")
+            return ""
+        except Exception as e:
+            print(f"⚠️ 转换HTML失败: {str(e)}")
+            return ""
+
     def convert_to_xiaohongshu(self, content: str) -> Tuple[str, List[str], List[str], List[str]]:
         """将博客文章转换为小红书风格的笔记，并生成标题和标签"""
         if not ai_client_available:
@@ -789,8 +967,8 @@ Markdown格式要求：
 
 注意：创作时要始终记住，标题决定打开率，内容决定完播率，互动决定涨粉率！"""
 
-            # 构建用户提示词
-            user_prompt = f"""请将以下内容转换为爆款小红书笔记。
+        # 构建用户提示词
+        user_prompt = f"""请将以下内容转换为爆款小红书笔记。
 
 内容如下：
 {content}
@@ -900,7 +1078,7 @@ Markdown格式要求：
                 except Exception as e:
                     print(f"⚠️ 获取配图失败: {str(e)}")
             
-            return xiaohongshu_content, titles, tags, images
+            return xiaohongshu_text_from_api, titles, tags, images
 
         except Exception as e:
             print(f"⚠️ 转换小红书笔记失败: {str(e)}")
@@ -1042,22 +1220,19 @@ Markdown格式要求：
         os.makedirs(temp_dir, exist_ok=True)
         
         try:
-            # 下载视频
-            print("⬇️ 正在下载视频...")
-            result = self._download_video(url, temp_dir)
-            if not result:
+            print("⬇️ 正在下载视频或字幕...")
+            file_path, video_info, is_subtitle = self._download_video(url, temp_dir)
+            if not file_path or not video_info:
                 return []
-                
-            audio_path, video_info = result
-            if not audio_path or not video_info:
-                return []
-                
-            print(f"✅ 视频下载成功: {video_info['title']}")
-            
-            # 转录音频
-            print("\n🎙️ 正在转录音频...")
-            print("正在转录音频（这可能需要几分钟）...")
-            transcript = self._transcribe_audio(audio_path)
+
+            if is_subtitle:
+                print("✅ 字幕下载成功，正在读取内容...")
+                transcript = self._read_subtitle_file(file_path)
+            else:
+                print(f"✅ 音频下载成功: {video_info['title']}")
+                print("\n🎙️ 正在转录音频...")
+                print("正在转录音频（这可能需要几分钟）...")
+                transcript = self._transcribe_audio(file_path)
             if not transcript:
                 return []
 
@@ -1132,6 +1307,28 @@ Markdown格式要求：
                         f.write("\n\n---\n")
                         f.write("\n".join([f"#{tag}" for tag in tags]))
                 print(f"\n✅ 小红书版本已保存至: {xiaohongshu_file}")
+
+                # 转换为HTML并打开
+                if MARKDOWN_CONVERSION_AVAILABLE:
+                    # 读取markdown文件内容
+                    with open(xiaohongshu_file, 'r', encoding='utf-8') as f:
+                        md_content = f.read()
+                    
+                    # 转换为HTML
+                    html_content = self._convert_md_to_html(md_content, titles[0] if titles else "小红书笔记")
+                    
+                    # 保存HTML文件
+                    html_file = xiaohongshu_file.replace('.md', '.html')
+                    with open(html_file, 'w', encoding='utf-8') as f:
+                        f.write(html_content)
+                    
+                    # 在默认浏览器中打开HTML文件
+                    import webbrowser
+                    webbrowser.open('file://' + os.path.abspath(html_file))
+                    print(f"✅ HTML预览已在浏览器中打开: {html_file}")
+                else:
+                    print("⚠️ HTML预览功能不可用，请安装markdown库: pip install markdown")
+                
                 return [original_file, organized_file, xiaohongshu_file]
             except Exception as e:
                 print(f"⚠️ 生成小红书版本失败: {str(e)}")
@@ -1227,6 +1424,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='视频笔记生成器')
     parser.add_argument('input', help='输入源：视频URL、包含URL的文件或markdown文件')
     parser.add_argument('--xiaohongshu', action='store_true', help='生成小红书风格的笔记')
+    parser.add_argument('--preview', action='store_true', help='仅预览markdown文件（转换为HTML并在浏览器中打开）')
     args = parser.parse_args()
     
     generator = VideoNoteGenerator()
@@ -1243,6 +1441,33 @@ if __name__ == '__main__':
                     content = f.read()
             except Exception as e:
                 print(f"⚠️ 无法读取文件: {str(e)}")
+                sys.exit(1)
+        
+        # 如果是仅预览模式
+        if args.preview:
+            if args.input.endswith('.md'):
+                if not MARKDOWN_CONVERSION_AVAILABLE:
+                    print("⚠️ HTML预览功能不可用，请安装markdown库: pip install markdown")
+                    sys.exit(1)
+                print(f"📝 预览Markdown文件: {args.input}")
+                # 提取标题（如果有的话）
+                title = ''
+                content_lines = content.split('\n')
+                if content_lines and content_lines[0].startswith('# '):
+                    title = content_lines[0][2:].strip()
+                # 转换为HTML
+                html_content = generator._convert_md_to_html(content, title or os.path.basename(args.input))
+                # 保存HTML文件
+                html_file = args.input.replace('.md', '.html')
+                with open(html_file, 'w', encoding='utf-8') as f:
+                    f.write(html_content)
+                # 在默认浏览器中打开
+                import webbrowser
+                webbrowser.open('file://' + os.path.abspath(html_file))
+                print(f"✅ HTML预览已在浏览器中打开: {html_file}")
+                sys.exit(0)
+            else:
+                print("⚠️ 预览功能仅支持Markdown文件")
                 sys.exit(1)
         
         # 如果是markdown文件，直接处理
@@ -1288,7 +1513,10 @@ if __name__ == '__main__':
         # 处理单个URL
         try:
             print(f"🎥 处理视频URL: {args.input}")
-            generator.process_video(args.input)
+            file_paths = generator.process_video(args.input)
+            
+
+                        
         except Exception as e:
             print(f"⚠️ 处理URL时出错：{str(e)}")
             sys.exit(1)
