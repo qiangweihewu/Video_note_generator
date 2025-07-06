@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文章笔记生成器 - 微信公众号模板预览</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 10px;
+        }
+        .template-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        .template-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .template-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+        }
+        .template-header {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        .template-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin: 0;
+        }
+        .template-description {
+            color: #666;
+            margin: 5px 0 0;
+            font-size: 0.9rem;
+        }
+        .template-preview {
+            height: 300px;
+            overflow: hidden;
+            position: relative;
+        }
+        .template-preview iframe {
+            width: 100%;
+            height: 1200px;
+            border: none;
+            transform: scale(0.5);
+            transform-origin: 0 0;
+            pointer-events: none;
+        }
+        .template-footer {
+            padding: 15px;
+            background: #f9f9f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .template-tag {
+            background: #e0e0e0;
+            color: #555;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+        .view-button {
+            background: #1e88e5;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .view-button:hover {
+            background: #1565c0;
+        }
+        .instructions {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .instructions h2 {
+            margin-top: 0;
+            color: #1e88e5;
+        }
+        .instructions code {
+            background: #f0f0f0;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+        @media (max-width: 768px) {
+            .template-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>文章笔记生成器 - 微信公众号模板预览</h1>
+    
+    <div class="instructions">
+        <h2>如何使用模板</h2>
+        <p>在命令行中使用 <code>--wechat-template</code> 参数指定要使用的模板：</p>
+        <pre><code>python article_note_generator.py your_video_url --wechat-template template_name</code></pre>
+        <p>请参阅 <a href="TEMPLATE_GUIDE.md">TEMPLATE_GUIDE.md</a> 获取更详细的使用说明。</p>
+    </div>
+
+    <div class="template-grid">
+        <!-- Default Template -->
+        <div class="template-card">
+            <div class="template-header">
+                <h3 class="template-name">default</h3>
+                <p class="template-description">基础模板：简洁大方的白底黑字风格，适合各类文章</p>
+            </div>
+            <div class="template-preview">
+                <iframe src="template_tests/20250705_215024_wechat.html"></iframe>
+            </div>
+            <div class="template-footer">
+                <span class="template-tag">通用</span>
+                <a href="template_tests/20250705_215024_wechat.html" class="view-button" target="_blank">查看完整预览</a>
+            </div>
+        </div>
+
+        <!-- Modern Template -->
+        <div class="template-card">
+            <div class="template-header">
+                <h3 class="template-name">modern</h3>
+                <p class="template-description">现代风格：时尚简约的蓝色主题，适合科技类文章</p>
+            </div>
+            <div class="template-preview">
+                <iframe src="template_tests/20250705_215118_wechat.html"></iframe>
+            </div>
+            <div class="template-footer">
+                <span class="template-tag">科技</span>
+                <a href="template_tests/20250705_215118_wechat.html" class="view-button" target="_blank">查看完整预览</a>
+            </div>
+        </div>
+
+        <!-- Tech Template -->
+        <div class="template-card">
+            <div class="template-header">
+                <h3 class="template-name">tech</h3>
+                <p class="template-description">技术专栏：类似GitHub风格的技术文档样式，适合深度技术文章</p>
+            </div>
+            <div class="template-preview">
+                <iframe src="template_tests/20250705_215206_wechat.html"></iframe>
+            </div>
+            <div class="template-footer">
+                <span class="template-tag">技术</span>
+                <a href="template_tests/20250705_215206_wechat.html" class="view-button" target="_blank">查看完整预览</a>
+            </div>
+        </div>
+
+        <!-- Mianpro Template -->
+        <div class="template-card">
+            <div class="template-header">
+                <h3 class="template-name">mianpro</h3>
+                <p class="template-description">mianpro风格：温暖活泼的粉红色调，适合生活类、情感类文章</p>
+            </div>
+            <div class="template-preview">
+                <iframe src="template_tests/20250705_215309_wechat.html"></iframe>
+            </div>
+            <div class="template-footer">
+                <span class="template-tag">生活</span>
+                <a href="template_tests/20250705_215309_wechat.html" class="view-button" target="_blank">查看完整预览</a>
+            </div>
+        </div>
+
+        <!-- Lapis Template -->
+        <div class="template-card">
+            <div class="template-header">
+                <h3 class="template-name">lapis</h3>
+                <p class="template-description">蓝宝石主题：优雅简洁的蓝色主题，适合商务、职场类文章</p>
+            </div>
+            <div class="template-preview">
+                <iframe src="template_tests/20250705_215418_wechat.html"></iframe>
+            </div>
+            <div class="template-footer">
+                <span class="template-tag">商务</span>
+                <a href="template_tests/20250705_215418_wechat.html" class="view-button" target="_blank">查看完整预览</a>
+            </div>
+        </div>
+
+        <!-- Maize Template -->
+        <div class="template-card">
+            <div class="template-header">
+                <h3 class="template-name">maize</h3>
+                <p class="template-description">玉米黄主题：温暖活泼的黄色主题，适合美食、旅行类文章</p>
+            </div>
+            <div class="template-preview">
+                <iframe src="template_tests/20250705_215502_wechat.html"></iframe>
+            </div>
+            <div class="template-footer">
+                <span class="template-tag">美食</span>
+                <a href="template_tests/20250705_215502_wechat.html" class="view-button" target="_blank">查看完整预览</a>
+            </div>
+        </div>
+
+        <!-- Orangeheart Template -->
+        <div class="template-card">
+            <div class="template-header">
+                <h3 class="template-name">orangeheart</h3>
+                <p class="template-description">橙心主题：热情洋溢的橙色主题，适合励志、健康类文章</p>
+            </div>
+            <div class="template-preview">
+                <iframe src="template_tests/20250705_215553_wechat.html"></iframe>
+            </div>
+            <div class="template-footer">
+                <span class="template-tag">励志</span>
+                <a href="template_tests/20250705_215553_wechat.html" class="view-button" target="_blank">查看完整预览</a>
+            </div>
+        </div>
+
+        <!-- Phycat Template -->
+        <div class="template-card">
+            <div class="template-header">
+                <h3 class="template-name">phycat</h3>
+                <p class="template-description">物理猫主题：清新自然的青色主题，适合科普、教育类文章</p>
+            </div>
+            <div class="template-preview">
+                <iframe src="template_tests/20250705_215638_wechat.html"></iframe>
+            </div>
+            <div class="template-footer">
+                <span class="template-tag">科普</span>
+                <a href="template_tests/20250705_215638_wechat.html" class="view-button" target="_blank">查看完整预览</a>
+            </div>
+        </div>
+
+        <!-- Pie Template -->
+        <div class="template-card">
+            <div class="template-header">
+                <h3 class="template-name">pie</h3>
+                <p class="template-description">派主题：简约现代的紫灰主题，适合艺术、设计类文章</p>
+            </div>
+            <div class="template-preview">
+                <iframe src="template_tests/20250705_215726_wechat.html"></iframe>
+            </div>
+            <div class="template-footer">
+                <span class="template-tag">艺术</span>
+                <a href="template_tests/20250705_215726_wechat.html" class="view-button" target="_blank">查看完整预览</a>
+            </div>
+        </div>
+
+        <!-- Purple Template -->
+        <div class="template-card">
+            <div class="template-header">
+                <h3 class="template-name">purple</h3>
+                <p class="template-description">紫色主题：高贵典雅的紫色主题，适合时尚、美妆类文章</p>
+            </div>
+            <div class="template-preview">
+                <iframe src="template_tests/20250705_215815_wechat.html"></iframe>
+            </div>
+            <div class="template-footer">
+                <span class="template-tag">时尚</span>
+                <a href="template_tests/20250705_215815_wechat.html" class="view-button" target="_blank">查看完整预览</a>
+            </div>
+        </div>
+
+        <!-- Rainbow Template -->
+        <div class="template-card">
+            <div class="template-header">
+                <h3 class="template-name">rainbow</h3>
+                <p class="template-description">彩虹主题：缤纷多彩的彩虹渐变主题，适合儿童、娱乐类文章</p>
+            </div>
+            <div class="template-preview">
+                <iframe src="template_tests/20250705_215906_wechat.html"></iframe>
+            </div>
+            <div class="template-footer">
+                <span class="template-tag">娱乐</span>
+                <a href="template_tests/20250705_215906_wechat.html" class="view-button" target="_blank">查看完整预览</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Adjust iframe scale for better preview
+        document.addEventListener('DOMContentLoaded', function() {
+            const iframes = document.querySelectorAll('.template-preview iframe');
+            iframes.forEach(iframe => {
+                iframe.onload = function() {
+                    const scale = 0.25; // Adjust scale as needed
+                    iframe.style.transform = `scale(${scale})`;
+                    iframe.style.height = `${1200}px`; // Adjust height as needed
+                };
+            });
+        });
+    </script>
+</body>
+</html>

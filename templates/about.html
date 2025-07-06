@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}文章笔记生成器 - 关于{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h2 class="card-title">关于文章笔记生成器</h2>
+                <p class="card-text">文章笔记生成器是一个强大的工具，可以将视频和音频内容转换为优质的小红书笔记和微信公众号文章。</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h3 class="card-title">主要功能</h3>
+                <ul>
+                    <li>支持从YouTube、哔哩哔哩、抖音等平台下载视频并提取内容</li>
+                    <li>支持处理本地音频文件</li>
+                    <li>使用先进的AI技术转录和优化内容</li>
+                    <li>自动生成小红书笔记格式</li>
+                    <li>自动生成微信公众号文章格式</li>
+                    <li>提供11种精美的微信公众号模板</li>
+                    <li>自动从Unsplash获取高质量配图</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h3 class="card-title">技术栈</h3>
+                <ul>
+                    <li>Python后端处理</li>
+                    <li>Flask Web框架</li>
+                    <li>OpenAI API用于内容优化</li>
+                    <li>Whisper模型用于语音转文字</li>
+                    <li>yt-dlp用于视频下载</li>
+                    <li>Unsplash API用于获取配图</li>
+                    <li>响应式HTML/CSS模板</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <h3 class="card-title">使用说明</h3>
+                <p>1. 在首页选择输入源（视频URL或音频文件）</p>
+                <p>2. 选择输出格式（小红书笔记、微信公众号文章或两者都选）</p>
+                <p>3. 如果选择生成微信公众号文章，可以选择喜欢的模板风格</p>
+                <p>4. 点击"开始生成"按钮，等待处理完成</p>
+                <p>5. 在结果页面查看和下载生成的文件</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

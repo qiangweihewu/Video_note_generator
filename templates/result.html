@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}文章笔记生成器 - 处理结果{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h2 class="card-title">处理结果</h2>
+                {% if result.success %}
+                <div class="alert alert-success" role="alert">
+                    {{ result.message }}
+                </div>
+                {% else %}
+                <div class="alert alert-danger" role="alert">
+                    {{ result.message }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if result.success and result.files %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <h3 class="card-title">生成的文件</h3>
+                
+                <div class="result-container">
+                    {% for file in result.files %}
+                    <div class="file-item">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <h5>{{ file.name }}</h5>
+                                <p class="text-muted">
+                                    {% if file.type == 'original' %}
+                                    原始转录内容
+                                    {% elif file.type == 'organized' %}
+                                    整理版内容
+                                    {% elif file.type == 'xiaohongshu' %}
+                                    小红书版本
+                                    {% elif file.type == 'wechat' %}
+                                    微信公众号版本
+                                    {% else %}
+                                    {{ file.type }}
+                                    {% endif %}
+                                </p>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                {% if file.extension == '.html' %}
+                                <a href="{{ file.url }}" class="btn btn-primary" target="_blank">在浏览器中查看</a>
+                                {% else %}
+                                <a href="{{ file.url }}" class="btn btn-secondary" download>下载文件</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="d-grid gap-2 mt-4">
+    <a href="/" class="btn btn-primary">返回首页</a>
+</div>
+{% endblock %}

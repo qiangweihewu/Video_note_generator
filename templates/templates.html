@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}文章笔记生成器 - 模板预览{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h2 class="card-title">微信公众号模板预览</h2>
+                <p class="card-text">选择适合您内容的模板风格</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    {% for template in templates %}
+    <div class="col-md-4 mb-4">
+        <div class="card template-card h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0">{{ template.name }}</h5>
+            </div>
+            <div class="template-preview">
+                {% if template.preview_file %}
+                <iframe src="/template_tests/{{ template.preview_file }}"
+                        style="width: 100%; height: 100%; border: none; transform: scale(0.3); transform-origin: 0 0; pointer-events: none;"
+                        scrolling="no"></iframe>
+                {% else %}
+                <div class="preview-placeholder">
+                    <div class="preview-icon">🎨</div>
+                    <div class="preview-text">{{ template.name }}</div>
+                </div>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <p class="card-text">{{ template.description }}</p>
+                <span class="badge bg-secondary">{{ template.category }}</span>
+            </div>
+            <div class="card-footer">
+                <a href="/preview/{{ template.id }}" class="btn btn-sm btn-primary" target="_blank">查看详情</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -2,7 +2,7 @@
 
 ## 功能概述
 
-Video Note Generator 现在支持将小红书风格的 markdown 文件转换为精美的图片。这个功能专门针对小红书内容进行了优化，生成的图片具有现代化的设计风格，非常适合社交媒体分享。
+文章笔记生成器现在支持将小红书风格的 markdown 文件转换为精美的图片。这个功能专门针对小红书内容进行了优化，生成的图片具有现代化的设计风格，非常适合社交媒体分享。
 
 ## 🚀 快速开始
 
@@ -19,9 +19,9 @@ playwright install chromium
 
 有三种方式可以生成图片：
 
-#### 方式一：在处理视频时自动生成图片
+#### 方式一：在处理视频/音频时自动生成图片
 ```bash
-python video_note_generator.py "https://example.com/video" --generate-image
+python article_note_generator.py "https://example.com/video" --generate-image
 ```
 
 #### 方式二：单独转换现有的小红书 markdown 文件
@@ -89,8 +89,8 @@ python markdown_to_image.py <markdown_file> [output_file] [--width WIDTH] [--hei
 ### 示例 1: 完整工作流程
 
 ```bash
-# 1. 处理视频并生成图片
-python video_note_generator.py "https://www.youtube.com/watch?v=example" --generate-image
+# 1. 处理视频/音频并生成图片
+python article_note_generator.py "https://www.youtube.com/watch?v=example" --generate-image
 
 # 生成的文件:
 # - temp_notes/20250702_234851_original.md
@@ -194,7 +194,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 - `markdown_to_image.py`: 核心转换模块
 - `test_image_generation.py`: 功能测试脚本
-- `video_note_generator.py`: 主程序（集成图片生成）
+- `article_note_generator.py`: 主程序（集成图片生成）
 - `requirements.txt`: 依赖项列表
 
 ## 📈 更新日志

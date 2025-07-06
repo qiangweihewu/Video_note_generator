@@ -1,10 +1,16 @@
 #!/usr/bin/env python3
 import sys
 import subprocess
-import pkg_resources
 import os
 from pathlib import Path
 import platform
+
+# 使用现代的 importlib.metadata 替代已弃用的 pkg_resources
+try:
+    from importlib.metadata import version, PackageNotFoundError
+except ImportError:
+    # Python < 3.8 的后备方案
+    from importlib_metadata import version, PackageNotFoundError
 
 def check_python_version():
     print("\n检查 Python 版本...")
@@ -56,15 +62,24 @@ def check_dependencies():
         return False
 
     all_satisfied = True
-    for package, version in required.items():
+    for package, required_version in required.items():
         try:
-            dist = pkg_resources.get_distribution(package)
-            if version and pkg_resources.parse_version(dist.version) < pkg_resources.parse_version(version):
-                print(f"❌ {package} 版本过低 (当前: {dist.version}, 需要: >={version})")
-                all_satisfied = False
+            installed_version = version(package)
+            if required_version:
+                # 简单的版本比较（对于大多数情况足够）
+                try:
+                    from packaging.version import parse as parse_version
+                    if parse_version(installed_version) < parse_version(required_version):
+                        print(f"❌ {package} 版本过低 (当前: {installed_version}, 需要: >={required_version})")
+                        all_satisfied = False
+                    else:
+                        print(f"✅ {package} 已安装 (版本: {installed_version})")
+                except ImportError:
+                    # 如果 packaging 不可用，跳过版本比较
+                    print(f"✅ {package} 已安装 (版本: {installed_version}) - 跳过版本检查")
             else:
-                print(f"✅ {package} 已安装 (版本: {dist.version})")
-        except pkg_resources.DistributionNotFound:
+                print(f"✅ {package} 已安装 (版本: {installed_version})")
+        except PackageNotFoundError:
             print(f"❌ 缺少依赖: {package}")
             all_satisfied = False
 
@@ -105,7 +120,7 @@ def check_env_file():
     return True
 
 def main():
-    print("=== 小红书笔记生成器环境检查 ===")
+    print("=== 文章笔记生成器环境检查 ===")
     
     checks = [
         ("Python 版本", check_python_version),
@@ -121,7 +136,8 @@ def main():
     
     print("\n=== 检查结果 ===")
     if all_passed:
-        print("✅ 所有检查通过！可以开始使用小红书笔记生成器了。")
+        print("✅ 所有检查通过！可以开始使用文章笔记生成器了。")
+        print("💡 支持生成小红书笔记和微信公众号文章两种格式")
     else:
         print("❌ 存在一些问题需要解决。请根据上述提示进行修复。")
 

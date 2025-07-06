@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}{{ template.name }} - 模板预览{% endblock %}
+
+{% block head %}
+<style>
+    .preview-frame {
+        width: 100%;
+        height: 600px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h2 class="card-title">{{ template.name }}</h2>
+                <p class="card-text">{{ template.description }}</p>
+                <span class="badge bg-secondary">{{ template.category }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <h3 class="card-title">模板预览</h3>
+                
+                {% if preview_file %}
+                <iframe src="/{{ preview_file }}" class="preview-frame"></iframe>
+                {% else %}
+                <div class="alert alert-warning" role="alert">
+                    没有可用的预览文件。请先运行 test_templates.py 生成模板示例。
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="d-grid gap-2 mt-4">
+    <a href="/templates" class="btn btn-secondary">返回模板列表</a>
+</div>
+{% endblock %}

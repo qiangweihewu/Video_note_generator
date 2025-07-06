@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文章笔记生成器 - AI驱动的内容创作工具</title>
+    
+    <!-- 预加载关键资源 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- 图标 -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✨</text></svg>">
+    
+    <style>
+        /* 🎨 艺术家设计的现代化界面样式 */
+
+        /* 全局变量定义 */
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --warning-gradient: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            --dark-gradient: linear-gradient(135deg, #434343 0%, #000000 100%);
+            
+            --glass-bg: rgba(255, 255, 255, 0.25);
+            --glass-border: rgba(255, 255, 255, 0.18);
+            --shadow-soft: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            --shadow-hover: 0 15px 35px rgba(31, 38, 135, 0.5);
+            
+            --text-primary: #2d3748;
+            --text-secondary: #4a5568;
+            --text-light: #718096;
+            
+            --border-radius: 20px;
+            --border-radius-small: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* 背景装饰元素 */
+        .bg-decoration {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .floating-shapes {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+
+        .shape {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            animation: float 20s infinite linear;
+        }
+
+        .shape-1 {
+            width: 80px;
+            height: 80px;
+            top: 20%;
+            left: 10%;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.3), rgba(118, 75, 162, 0.3));
+            animation-delay: 0s;
+        }
+
+        .shape-2 {
+            width: 120px;
+            height: 120px;
+            top: 60%;
+            right: 15%;
+            background: linear-gradient(135deg, rgba(240, 147, 251, 0.3), rgba(245, 87, 108, 0.3));
+            animation-delay: -5s;
+        }
+
+        .shape-3 {
+            width: 60px;
+            height: 60px;
+            top: 80%;
+            left: 20%;
+            background: linear-gradient(135deg, rgba(79, 172, 254, 0.3), rgba(0, 242, 254, 0.3));
+            animation-delay: -10s;
+        }
+
+        .shape-4 {
+            width: 100px;
+            height: 100px;
+            top: 30%;
+            right: 30%;
+            background: linear-gradient(135deg, rgba(67, 233, 123, 0.3), rgba(56, 249, 215, 0.3));
+            animation-delay: -15s;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px) rotate(0deg);
+            }
+            25% {
+                transform: translateY(-20px) rotate(90deg);
+            }
+            50% {
+                transform: translateY(0px) rotate(180deg);
+            }
+            75% {
+                transform: translateY(20px) rotate(270deg);
+            }
+        }
+
+        /* 全局样式重置和基础设置 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+            line-height: 1.7;
+            color: var(--text-primary);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* 背景动画 */
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* 玻璃态效果容器 */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+        }
+
+        /* 毛玻璃效果卡片 */
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: var(--border-radius);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow-soft);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+        }
+
+        .glass-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* 头部导航 */
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: var(--border-radius);
+            padding: 20px 30px;
+            margin-bottom: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: var(--shadow-soft);
+        }
+
+        /* Logo 样式增强 */
+        .logo {
+            display: flex;
+            align-items: center;
+            font-weight: 800;
+            font-size: 1.5rem;
+            transition: var(--transition);
+        }
+
+        .logo-icon {
+            font-size: 2rem;
+            animation: sparkle 2s ease-in-out infinite;
+            margin-right: 10px;
+        }
+
+        .logo-text {
+            background: linear-gradient(135deg, #fff 0%, #f0f0f0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        @keyframes sparkle {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.1) rotate(10deg); }
+        }
+
+        .nav-pills .nav-link {
+            border-radius: var(--border-radius-small);
+            margin: 0 5px;
+            padding: 12px 24px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.8);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-icon {
+            margin-right: 8px;
+            font-size: 1.1rem;
+        }
+
+        .nav-pills .nav-link:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .nav-pills .nav-link.active {
+            background: var(--primary-gradient);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        /* 英雄区域样式 */
+        .hero-section {
+            padding: 15px 0;
+            margin-bottom: 20px;
+        }
+        
+        .hero-title-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .hero-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff 0%, #f0f0f0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            line-height: 1.1;
+            margin: 0;
+            text-align: center;
+            flex: 1;
+        }
+
+        .hero-subtitle {
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 10px;
+            font-weight: 300;
+            text-align: center;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 0;
+            min-width: 120px;
+        }
+
+        .stat-number {
+            font-size: 1.6rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff 0%, #f0f0f0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 2px;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 500;
+        }
+
+        /* 表单样式 */
+        .form-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: var(--border-radius);
+            padding: 40px;
+            box-shadow: var(--shadow-soft);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .form-section {
+            margin-bottom: 40px;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 25px;
+        }
+
+        .title-icon {
+            margin-right: 12px;
+            font-size: 1.5rem;
+        }
+
+        /* 特色功能区域 */
+        .features-section {
+            margin: 80px 0;
+        }
+
+        .features-header {
+            margin-bottom: 60px;
+        }
+
+        .features-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .title-gradient {
+            background: linear-gradient(135deg, var(--text-primary) 0%, #667eea 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .features-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            font-weight: 300;
+        }
+
+        .feature-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 60px;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(20px);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: var(--shadow-soft);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--primary-gradient);
+        }
+
+        .feature-card:nth-child(2)::before {
+            background: var(--secondary-gradient);
+        }
+
+        .feature-card:nth-child(3)::before {
+            background: var(--success-gradient);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .feature-icon {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .icon-circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .xiaohongshu-gradient {
+            background: var(--secondary-gradient);
+        }
+
+        .wechat-gradient {
+            background: var(--success-gradient);
+        }
+
+        .tech-gradient {
+            background: var(--warning-gradient);
+        }
+
+        .icon-emoji {
+            font-size: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .feature-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .feature-intro {
+            text-align: center;
+            font-size: 1rem;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .feature-list li {
+            display: flex;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(102, 126, 234, 0.1);
+            transition: var(--transition);
+        }
+
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+
+        .feature-list li:hover {
+            background: rgba(102, 126, 234, 0.05);
+            border-radius: 8px;
+            padding-left: 10px;
+            margin: 0 -10px;
+        }
+
+        .list-icon {
+            margin-right: 12px;
+            font-size: 1.1rem;
+            min-width: 20px;
+        }
+
+        .list-text {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        /* 页脚增强 */
+        .footer {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            margin-top: 60px;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .footer-content {
+            text-align: center;
+        }
+
+        .footer-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .footer-logo .logo-icon {
+            font-size: 1.5rem;
+            margin-right: 10px;
+        }
+
+        .footer-description {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.95rem;
+            font-style: italic;
+            margin-bottom: 20px;
+        }
+
+        .footer-links {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .footer-link {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            font-weight: 500;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+        }
+
+        .footer-link:hover {
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .link-icon {
+            margin-right: 5px;
+        }
+
+        .footer-divider {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .footer-copyright {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
+        }
+
+        /* 动画 */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+
+        .animate-delay-1 { animation-delay: 0.1s; }
+        .animate-delay-2 { animation-delay: 0.2s; }
+        .animate-delay-3 { animation-delay: 0.3s; }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+            
+            .hero-subtitle {
+                font-size: 1.1rem;
+            }
+            
+            .form-container {
+                padding: 25px;
+            }
+            
+            .feature-cards {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .container {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 背景装饰元素 -->
+    <div class="bg-decoration">
+        <div class="floating-shapes">
+            <div class="shape shape-1"></div>
+            <div class="shape shape-2"></div>
+            <div class="shape shape-3"></div>
+            <div class="shape shape-4"></div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- 艺术化头部导航 -->
+        <header class="header glass-card fade-in-up">
+            <div class="d-flex flex-wrap justify-content-between align-items-center">
+                <a href="/" class="logo text-decoration-none d-flex align-items-center">
+                    <span class="logo-icon">✨</span>
+                    <span class="logo-text">文章笔记生成器</span>
+                </a>
+                <nav class="nav nav-pills">
+                    <a class="nav-link active" href="/">
+                        <span class="nav-icon">🏠</span> 首页
+                    </a>
+                    <a class="nav-link" href="/templates">
+                        <span class="nav-icon">🎨</span> 模板预览
+                    </a>
+                    <a class="nav-link" href="/about">
+                        <span class="nav-icon">ℹ️</span> 关于
+                    </a>
+                </nav>
+            </div>
+        </header>
+
+        <!-- 主要内容区域 -->
+        <main class="fade-in-up animate-delay-1">
+            <!-- 英雄区域 -->
+            <section class="hero-section fade-in-up">
+                <div class="hero-content">
+                    <div class="hero-title-row">
+                        <div class="stat-item">
+                            <div class="stat-number">11+</div>
+                            <div class="stat-label">精美模板</div>
+                        </div>
+                        <h1 class="hero-title">
+                            ✨ AI驱动的内容创作魔法师
+                        </h1>
+                        <div class="stat-item">
+                            <div class="stat-number">∞</div>
+                            <div class="stat-label">创作可能</div>
+                        </div>
+                    </div>
+                    <p class="hero-subtitle">
+                        一键将视频音频转换为精美的小红书笔记和微信公众号文章<br>
+                        让创作变得简单而美好
+                    </p>
+                </div>
+            </section>
+
+            <!-- 主要表单区域 -->
+            <section class="form-section fade-in-up animate-delay-1">
+                <div class="form-container glass-card">
+                    <div class="form-section">
+                        <h4 class="section-title">
+                            <span class="title-icon">📥</span>
+                            选择输入源
+                        </h4>
+                        <p class="text-center text-muted mb-4">
+                            支持YouTube、哔哩哔哩、抖音视频链接，或直接上传音频文件
+                        </p>
+                    </div>
+
+                    <div class="form-section">
+                        <h4 class="section-title">
+                            <span class="title-icon">⚙️</span>
+                            输出配置
+                        </h4>
+                        <p class="text-center text-muted mb-4">
+                            选择输出格式和模板风格，AI将为您生成专业的内容
+                        </p>
+                    </div>
+
+                    <div class="text-center">
+                        <button class="btn btn-primary btn-lg" style="background: var(--primary-gradient); border: none; padding: 18px 40px; border-radius: 12px; font-weight: 600; box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);">
+                            <span style="margin-right: 10px; font-size: 1.3rem;">✨</span>
+                            开始创作魔法
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 特色功能展示 -->
+            <section class="features-section fade-in-up animate-delay-2">
+                <div class="features-header text-center mb-5">
+                    <h2 class="features-title">
+                        <span class="title-gradient">为什么选择我们？</span>
+                    </h2>
+                    <p class="features-subtitle">
+                        专业的AI技术 × 精美的设计模板 × 极致的用户体验
+                    </p>
+                </div>
+                
+                <div class="feature-cards">
+                    <div class="feature-card fade-in-up animate-delay-1">
+                        <div class="feature-icon">
+                            <div class="icon-circle xiaohongshu-gradient">
+                                <span class="icon-emoji">📱</span>
+                            </div>
+                        </div>
+                        <h5 class="feature-title">小红书笔记专家</h5>
+                        <div class="feature-description">
+                            <p class="feature-intro">打造爆款笔记的秘密武器</p>
+                            <ul class="feature-list">
+                                <li>
+                                    <span class="list-icon">🎯</span>
+                                    <span class="list-text">二极管标题法，吸引眼球</span>
+                                </li>
+                                <li>
+                                    <span class="list-icon">✍️</span>
+                                    <span class="list-text">600-800字精华内容</span>
+                                </li>
+                                <li>
+                                    <span class="list-icon">🖼️</span>
+                                    <span class="list-text">2-4张高质量配图</span>
+                                </li>
+                                <li>
+                                    <span class="list-icon">🏷️</span>
+                                    <span class="list-text">智能标签系统优化</span>
+                                </li>
+                                <li>
+                                    <span class="list-icon">💬</span>
+                                    <span class="list-text">互动引导设计</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-card fade-in-up animate-delay-2">
+                        <div class="feature-icon">
+                            <div class="icon-circle wechat-gradient">
+                                <span class="icon-emoji">📰</span>
+                            </div>
+                        </div>
+                        <h5 class="feature-title">微信公众号大师</h5>
+                        <div class="feature-description">
+                            <p class="feature-intro">专业级文章生成引擎</p>
+                            <ul class="feature-list">
+                                <li>
+                                    <span class="list-icon">📝</span>
+                                    <span class="list-text">15字内吸睛标题</span>
+                                </li>
+                                <li>
+                                    <span class="list-icon">📖</span>
+                                    <span class="list-text">800-2000字深度内容</span>
+                                </li>
+                                <li>
+                                    <span class="list-icon">🗂️</span>
+                                    <span class="list-text">3-5个逻辑清晰小标题</span>
+                                </li>
+                                <li>
+                                    <span class="list-icon">📱</span>
+                                    <span class="list-text">适配碎片化阅读</span>
+                                </li>
+                                <li>
+                                    <span class="list-icon">🎨</span>
+                                    <span class="list-text">11种精美模板风格</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-card fade-in-up animate-delay-3">
+                        <div class="feature-icon">
+                            <div class="icon-circle tech-gradient">
+                                <span class="icon-emoji">🛠️</span>
+                            </div>
+                        </div>
+                        <h5 class="feature-title">技术驱动创新</h5>
+                        <div class="feature-description">
+                            <p class="feature-intro">前沿AI技术栈支持</p>
+                            <ul class="feature-list">
+                                <li>
+                                    <span class="list-icon">🎤</span>
+                                    <span class="list-text">Whisper语音识别</span>
+                                </li>
+                                <li>
+                                    <span class="list-icon">🤖</span>
+                                    <span class="list-text">GPT智能内容优化</span>
+                                </li>
+                                <li>
+                                    <span class="list-icon">🌅</span>
+                                    <span class="list-text">Unsplash高质量配图</span>
+                                </li>
+                                <li>
+                                    <span class="list-icon">📱</span>
+                                    <span class="list-text">响应式HTML生成</span>
+                                </li>
+                                <li>
+                                    <span class="list-icon">⚡</span>
+                                    <span class="list-text">批量处理加速</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- 艺术化页脚 -->
+        <footer class="footer glass-card fade-in-up animate-delay-3">
+            <div class="footer-content">
+                <div class="footer-logo mb-3">
+                    <span class="logo-icon">✨</span>
+                    <span class="logo-text">文章笔记生成器</span>
+                </div>
+                <p class="footer-description">
+                    AI驱动的内容创作工具，让创作变得简单而美好
+                </p>
+                <div class="footer-links">
+                    <a href="https://github.com/whotto

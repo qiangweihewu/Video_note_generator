@@ -1,0 +1,491 @@
+{% extends "base.html" %}
+
+{% block title %}文章笔记生成器 - AI驱动的内容创作工具{% endblock %}
+
+{% block content %}
+<!-- 英雄区域 -->
+<section class="hero-section fade-in-up">
+    <div class="hero-content">
+        <div class="hero-title-row">
+            <div class="stat-item">
+                <div class="stat-number">11+</div>
+                <div class="stat-label">精美模板</div>
+            </div>
+            <h1 class="hero-title">
+                ✨ AI驱动的内容创作魔法师
+            </h1>
+            <div class="stat-item">
+                <div class="stat-number">∞</div>
+                <div class="stat-label">创作可能</div>
+            </div>
+        </div>
+        <p class="hero-subtitle">
+            一键将视频音频转换为精美的小红书笔记和微信公众号文章<br>
+            让创作变得简单而美好
+        </p>
+    </div>
+</section>
+
+<!-- 主要表单区域 -->
+<section class="form-section fade-in-up animate-delay-1">
+    <div class="form-container glass-card">
+        <form action="/process" method="post" enctype="multipart/form-data" class="creation-form">
+            <!-- 输入源选择 -->
+            <div class="form-section">
+                <h4 class="section-title">
+                    <span class="title-icon">📥</span>
+                    选择输入源
+                </h4>
+                <ul class="nav nav-tabs modern-tabs" id="inputTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="url-tab" data-bs-toggle="tab" data-bs-target="#url-tab-pane" type="button" role="tab">
+                            <span class="tab-icon">🎬</span>
+                            视频URL
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="audio-tab" data-bs-toggle="tab" data-bs-target="#audio-tab-pane" type="button" role="tab">
+                            <span class="tab-icon">🎵</span>
+                            音频文件
+                        </button>
+                    </li>
+                </ul>
+                
+                <div class="tab-content modern-tab-content" id="inputTabsContent">
+                    <div class="tab-pane fade show active" id="url-tab-pane" role="tabpanel">
+                        <div class="input-group-modern">
+                            <label for="video_url" class="form-label modern-label">
+                                <span class="label-icon">🔗</span>
+                                视频链接
+                            </label>
+                            <input type="text" class="form-control modern-input" id="video_url" name="video_url"
+                                   placeholder="粘贴YouTube、哔哩哔哩或抖音视频链接...">
+                            <div class="form-text modern-hint">
+                                <span class="hint-icon">💡</span>
+                                支持主流视频平台，自动识别内容类型
+                            </div>
+                        </div>
+                        
+                        <div class="batch-toggle-section">
+                            <div class="form-check modern-checkbox">
+                                <input class="form-check-input" type="checkbox" id="enable_batch" name="enable_batch">
+                                <label class="form-check-label" for="enable_batch">
+                                    <span class="checkbox-icon">⚡</span>
+                                    启用批量处理模式
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="batch-input modern-batch-input" style="display: none;">
+                            <label for="batch_urls" class="form-label modern-label">
+                                <span class="label-icon">📋</span>
+                                批量URL列表
+                            </label>
+                            <textarea class="form-control modern-textarea" id="batch_urls" name="batch_urls" rows="5"
+                                      placeholder="每行输入一个视频链接&#10;支持最多10个URL同时处理&#10;&#10;示例：&#10;https://www.youtube.com/watch?v=...&#10;https://www.bilibili.com/video/..."></textarea>
+                            <div class="form-text modern-hint">
+                                <span class="hint-icon">🚀</span>
+                                批量处理可大幅提升工作效率
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-pane fade" id="audio-tab-pane" role="tabpanel">
+                        <div class="input-group-modern">
+                            <label for="audio_file" class="form-label modern-label">
+                                <span class="label-icon">📁</span>
+                                选择音频文件
+                            </label>
+                            <div class="file-upload-area">
+                                <input class="form-control modern-file-input" type="file" id="audio_file" name="audio_file"
+                                       accept=".mp3,.wav,.m4a,.flac,.ogg,.aac">
+                                <div class="file-upload-hint">
+                                    <span class="upload-icon">☁️</span>
+                                    <div class="upload-text">
+                                        <strong>点击选择文件</strong> 或拖拽到此处
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-text modern-hint">
+                                <span class="hint-icon">🎼</span>
+                                支持MP3、WAV、M4A、FLAC、OGG、AAC等格式
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 输出选项 -->
+            <div class="form-section">
+                <h4 class="section-title">
+                    <span class="title-icon">⚙️</span>
+                    输出配置
+                </h4>
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <label for="output_format" class="form-label modern-label">
+                            <span class="label-icon">📄</span>
+                            输出格式
+                        </label>
+                        <select class="form-select modern-select" id="output_format" name="output_format">
+                            <option value="both" selected>🎯 小红书笔记 + 微信公众号文章</option>
+                            <option value="xiaohongshu">📱 仅小红书笔记</option>
+                            <option value="wechat">📰 仅微信公众号文章</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="wechat_template" class="form-label modern-label">
+                            <span class="label-icon">🎨</span>
+                            微信模板风格
+                        </label>
+                        <select class="form-select modern-select" id="wechat_template" name="wechat_template">
+                            {% for template in templates %}
+                            <option value="{{ template.id }}" {% if template.id == 'default' %}selected{% endif %}>
+                                {{ template.name }} - {{ template.description }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text modern-hint">
+                            <span class="hint-icon">👀</span>
+                            <a href="/templates" target="_blank" class="template-preview-link">预览所有模板效果</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 提交按钮 -->
+            <div class="submit-section">
+                <button type="submit" class="btn btn-primary btn-lg modern-submit-btn">
+                    <span class="btn-icon">✨</span>
+                    <span class="btn-text">开始创作魔法</span>
+                    <span class="btn-loading" style="display: none;">
+                        <span class="loading-spinner"></span>
+                        正在处理中...
+                    </span>
+                </button>
+            </div>
+        </form>
+    </div>
+</section>
+
+<!-- 特色功能展示 -->
+<section class="features-section fade-in-up animate-delay-2">
+    <div class="features-header text-center mb-5">
+        <h2 class="features-title">
+            <span class="title-gradient">为什么选择我们？</span>
+        </h2>
+        <p class="features-subtitle">
+            专业的AI技术 × 精美的设计模板 × 极致的用户体验
+        </p>
+    </div>
+    
+    <div class="feature-cards">
+        <div class="feature-card fade-in-up animate-delay-1">
+            <div class="feature-icon">
+                <div class="icon-circle xiaohongshu-gradient">
+                    <span class="icon-emoji">📱</span>
+                </div>
+            </div>
+            <h5 class="feature-title">小红书笔记专家</h5>
+            <div class="feature-description">
+                <p class="feature-intro">打造爆款笔记的秘密武器</p>
+                <ul class="feature-list">
+                    <li>
+                        <span class="list-icon">🎯</span>
+                        <span class="list-text">二极管标题法，吸引眼球</span>
+                    </li>
+                    <li>
+                        <span class="list-icon">✍️</span>
+                        <span class="list-text">600-800字精华内容</span>
+                    </li>
+                    <li>
+                        <span class="list-icon">🖼️</span>
+                        <span class="list-text">2-4张高质量配图</span>
+                    </li>
+                    <li>
+                        <span class="list-icon">🏷️</span>
+                        <span class="list-text">智能标签系统优化</span>
+                    </li>
+                    <li>
+                        <span class="list-icon">💬</span>
+                        <span class="list-text">互动引导设计</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="feature-card fade-in-up animate-delay-2">
+            <div class="feature-icon">
+                <div class="icon-circle wechat-gradient">
+                    <span class="icon-emoji">📰</span>
+                </div>
+            </div>
+            <h5 class="feature-title">微信公众号大师</h5>
+            <div class="feature-description">
+                <p class="feature-intro">专业级文章生成引擎</p>
+                <ul class="feature-list">
+                    <li>
+                        <span class="list-icon">📝</span>
+                        <span class="list-text">15字内吸睛标题</span>
+                    </li>
+                    <li>
+                        <span class="list-icon">📖</span>
+                        <span class="list-text">800-2000字深度内容</span>
+                    </li>
+                    <li>
+                        <span class="list-icon">🗂️</span>
+                        <span class="list-text">3-5个逻辑清晰小标题</span>
+                    </li>
+                    <li>
+                        <span class="list-icon">📱</span>
+                        <span class="list-text">适配碎片化阅读</span>
+                    </li>
+                    <li>
+                        <span class="list-icon">🎨</span>
+                        <span class="list-text">11种精美模板风格</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="feature-card fade-in-up animate-delay-3">
+            <div class="feature-icon">
+                <div class="icon-circle tech-gradient">
+                    <span class="icon-emoji">🛠️</span>
+                </div>
+            </div>
+            <h5 class="feature-title">技术驱动创新</h5>
+            <div class="feature-description">
+                <p class="feature-intro">前沿AI技术栈支持</p>
+                <ul class="feature-list">
+                    <li>
+                        <span class="list-icon">🎤</span>
+                        <span class="list-text">Whisper语音识别</span>
+                    </li>
+                    <li>
+                        <span class="list-icon">🤖</span>
+                        <span class="list-text">GPT智能内容优化</span>
+                    </li>
+                    <li>
+                        <span class="list-icon">🌅</span>
+                        <span class="list-text">Unsplash高质量配图</span>
+                    </li>
+                    <li>
+                        <span class="list-icon">📱</span>
+                        <span class="list-text">响应式HTML生成</span>
+                    </li>
+                    <li>
+                        <span class="list-icon">⚡</span>
+                        <span class="list-text">批量处理加速</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 工作流程展示 -->
+<section class="workflow-section fade-in-up animate-delay-3">
+    <div class="workflow-header text-center mb-5">
+        <h2 class="workflow-title">
+            <span class="title-gradient">简单三步，完成创作</span>
+        </h2>
+        <p class="workflow-subtitle">
+            从视频到精美文章，只需要几分钟
+        </p>
+    </div>
+    
+    <div class="workflow-steps">
+        <div class="workflow-step">
+            <div class="step-number">1</div>
+            <div class="step-content">
+                <h4 class="step-title">输入内容</h4>
+                <p class="step-description">粘贴视频链接或上传音频文件</p>
+            </div>
+            <div class="step-arrow">→</div>
+        </div>
+        
+        <div class="workflow-step">
+            <div class="step-number">2</div>
+            <div class="step-content">
+                <h4 class="step-title">AI处理</h4>
+                <p class="step-description">智能转录、内容优化、配图匹配</p>
+            </div>
+            <div class="step-arrow">→</div>
+        </div>
+        
+        <div class="workflow-step">
+            <div class="step-number">3</div>
+            <div class="step-content">
+                <h4 class="step-title">获得成果</h4>
+                <p class="step-description">下载精美的小红书笔记和公众号文章</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 批量处理切换功能
+        const enableBatchCheckbox = document.getElementById('enable_batch');
+        const batchInput = document.querySelector('.modern-batch-input');
+        const singleUrlInput = document.getElementById('video_url');
+        
+        enableBatchCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                batchInput.style.display = 'block';
+                singleUrlInput.disabled = true;
+                singleUrlInput.style.opacity = '0.5';
+                // 添加动画效果
+                batchInput.style.opacity = '0';
+                batchInput.style.transform = 'translateY(-20px)';
+                setTimeout(() => {
+                    batchInput.style.transition = 'all 0.3s ease';
+                    batchInput.style.opacity = '1';
+                    batchInput.style.transform = 'translateY(0)';
+                }, 10);
+            } else {
+                batchInput.style.display = 'none';
+                singleUrlInput.disabled = false;
+                singleUrlInput.style.opacity = '1';
+            }
+        });
+
+        // 表单提交增强
+        const form = document.querySelector('.creation-form');
+        const submitBtn = document.querySelector('.modern-submit-btn');
+        const btnText = submitBtn.querySelector('.btn-text');
+        const btnLoading = submitBtn.querySelector('.btn-loading');
+
+        form.addEventListener('submit', function(e) {
+            // 显示加载状态
+            btnText.style.display = 'none';
+            btnLoading.style.display = 'flex';
+            submitBtn.disabled = true;
+            submitBtn.style.transform = 'scale(0.98)';
+            
+            // 添加提交动画
+            submitBtn.style.background = 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)';
+        });
+
+        // 文件上传区域增强
+        const fileInput = document.getElementById('audio_file');
+        const fileUploadArea = document.querySelector('.file-upload-area');
+        const uploadText = document.querySelector('.upload-text');
+
+        if (fileInput && fileUploadArea) {
+            // 拖拽上传功能
+            fileUploadArea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                this.style.borderColor = '#667eea';
+                this.style.background = 'rgba(102, 126, 234, 0.1)';
+                this.style.transform = 'scale(1.02)';
+            });
+
+            fileUploadArea.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                this.style.borderColor = 'rgba(102, 126, 234, 0.3)';
+                this.style.background = 'rgba(102, 126, 234, 0.02)';
+                this.style.transform = 'scale(1)';
+            });
+
+            fileUploadArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.style.borderColor = 'rgba(102, 126, 234, 0.3)';
+                this.style.background = 'rgba(102, 126, 234, 0.02)';
+                this.style.transform = 'scale(1)';
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    fileInput.files = files;
+                    updateFileDisplay(files[0].name);
+                }
+            });
+
+            fileInput.addEventListener('change', function(e) {
+                if (e.target.files.length > 0) {
+                    updateFileDisplay(e.target.files[0].name);
+                }
+            });
+
+            function updateFileDisplay(fileName) {
+                uploadText.innerHTML = `
+                    <strong>已选择文件:</strong><br>
+                    <span style="color: #667eea; font-weight: 500;">${fileName}</span>
+                `;
+                fileUploadArea.style.borderColor = '#667eea';
+                fileUploadArea.style.background = 'rgba(102, 126, 234, 0.1)';
+            }
+        }
+
+        // 输入框焦点增强效果
+        const modernInputs = document.querySelectorAll('.modern-input, .modern-select, .modern-textarea');
+        modernInputs.forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.style.transform = 'translateY(-2px)';
+                this.parentElement.style.transition = 'transform 0.2s ease';
+            });
+
+            input.addEventListener('blur', function() {
+                this.parentElement.style.transform = 'translateY(0)';
+            });
+        });
+
+        // 特色卡片悬停效果增强
+        const featureCards = document.querySelectorAll('.feature-card');
+        featureCards.forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-15px) scale(1.02)';
+                this.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+                
+                // 添加光晕效果
+                const iconCircle = this.querySelector('.icon-circle');
+                if (iconCircle) {
+                    iconCircle.style.transform = 'scale(1.1)';
+                    iconCircle.style.filter = 'brightness(1.2)';
+                }
+            });
+
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(-10px) scale(1)';
+                
+                const iconCircle = this.querySelector('.icon-circle');
+                if (iconCircle) {
+                    iconCircle.style.transform = 'scale(1)';
+                    iconCircle.style.filter = 'brightness(1)';
+                }
+            });
+        });
+
+        // 页面加载完成后的动画
+        setTimeout(() => {
+            document.body.classList.add('loaded');
+            
+            // 依次显示元素
+            const animatedElements = document.querySelectorAll('.fade-in-up');
+            animatedElements.forEach((element, index) => {
+                setTimeout(() => {
+                    element.style.opacity = '1';
+                    element.style.transform = 'translateY(0)';
+                }, index * 200);
+            });
+        }, 100);
+    });
+
+    // 页面可见性API - 当用户切换标签页时暂停动画
+    document.addEventListener('visibilitychange', function() {
+        const shapes = document.querySelectorAll('.floating-shapes .shape');
+        if (document.hidden) {
+            shapes.forEach(shape => {
+                shape.style.animationPlayState = 'paused';
+            });
+        } else {
+            shapes.forEach(shape => {
+                shape.style.animationPlayState = 'running';
+            });
+        }
+    });
+</script>
+{% endblock %}
